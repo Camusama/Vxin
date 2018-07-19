@@ -1,19 +1,14 @@
 <template>
   <div>
-    <p class="card">
-      {{text}}
-    </p>
+    评论过的书页面
   </div>
 </template>
-
 <script>
 export default {
-  props: ['text']
+
 }
 </script>
-
 <style>
-.card {
-  padding: 10px;
-}
+
+
 </style>
