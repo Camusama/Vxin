@@ -1,18 +1,29 @@
+
 <template>
+
   <div class="container">
-    <div class="userinfo" @click='login'>
-      <img :src="userinfo.avatarUrl" alt="">
+    <div class="userinfo">
+      <img :src="userinfo.avatarUrl"
+           alt="">
       <p>{{userinfo.nickName}}</p>
     </div>
     <YearProgress></YearProgress>
+    <button v-if='userinfo.openId'
+            @click='scanBook'
+            class='btn'>添加图书</button>
+    <button v-else
+            open-type="getUserInfo"
+            lang="zh_CN"
+            class='btn'
+            @getuserinfo="login">点击登录</button>
 
-    <button v-if='userinfo.openId' @click='scanBook' class='btn'>添加图书</button>
   </div>
+
 </template>
 <script>
 import qcloud from 'wafer2-client-sdk'
 import YearProgress from '@/components/YearProgress'
-import {showSuccess, post} from '@/util'
+import { showSuccess } from '@/util'
 import config from '@/config'
 export default {
   components: {
@@ -21,8 +32,8 @@ export default {
   data () {
     return {
       userinfo: {
-        avatarUrl: '../../../static/img/unlogin.png',
-        nickName: '点击登录'
+        avatarUrl: 'http://image.shengxinjing.cn/rate/unlogin.png',
+        nickName: ''
       }
     }
   },
@@ -31,61 +42,69 @@ export default {
     scanBook () {
       wx.scanCode({
         success: (res) => {
-          if(res.result){
+          if (res.result) {
             console.log(res.result)
           }
         }
       })
     },
+    loginSuccess (res) {
+      showSuccess('登录成功')
+      wx.setStorageSync('userinfo', res)
+      this.userinfo = res
+    },
     login () {
-      let user = wx.getStorageSync('userinfo')
-      const self = this
-      if (!user) {
-        qcloud.setLoginUrl(config.loginUrl)
-        qcloud.login({
-          success: function (userinfo) {
-            qcloud.request({
-              url: config.userUrl,
-              login: true,
-              success (userRes) {
-                showSuccess('登录成功')
-                wx.setStorageSync('userinfo', userRes.data.data)
-                self.userinfo = userRes.data.data
-              }
-            })
+      wx.showToast({
+        title: '登录中',
+        icon: 'loading'
+      })
+      qcloud.setLoginUrl(config.loginUrl)
+      const session = qcloud.Session.get()
+      if (session) {
+        qcloud.loginWithCode({
+          success: res => {
+            console.log('没过期的登录', res)
+            this.loginSuccess(res)
+          },
+          fail: err => {
+            console.error(err)
           }
-
+        })
+      } else {
+        qcloud.login({
+          success: res => {
+            console.log('登录成功', res)
+            this.loginSuccess(res)
+          },
+          fail: err => {
+            console.error(err)
+          }
         })
       }
     }
   },
   onShow () {
-    // console.log(123)
+    wx.showShareMenu()
     let userinfo = wx.getStorageSync('userinfo')
-    // console.log([userinfo])
     if (userinfo) {
       this.userinfo = userinfo
     }
-    // console.log(this.userinfo)
   }
 }
 </script>
 
 <style lang='scss'>
-.container{
-  padding:0 30rpx;
-
-}  
-.userinfo{
-  margin-top:100rpx;
-  text-align:center;
-  img{
+.container {
+  padding: 0 30rpx;
+}
+.userinfo {
+  margin-top: 100rpx;
+  text-align: center;
+  img {
     width: 150rpx;
-    height:150rpx;
+    height: 150rpx;
     margin: 20rpx;
     border-radius: 50%;
   }
 }
-
-
 </style>

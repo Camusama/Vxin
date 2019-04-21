@@ -1,7 +1,7 @@
 {
 	"description": "项目配置文件。",
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": false,
 		"postcss": true,
 		"minified": true,
@@ -9,6 +9,7 @@
 	},
 	"miniprogramRoot": "./dist/",
 	"compileType": "miniprogram",
+	"qcloudRoot": "./server/",
 	"appid": "wx0de8981ed4715ecd",
 	"projectname": "wx-mpvue",
 	"condition": {
